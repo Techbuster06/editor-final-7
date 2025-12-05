@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Twin Clouds AI Editor</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="stylesheet" href="editor.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://unpkg.com/konva@9.3.6/konva.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Anton&family=Oswald:wght@400;700&family=Raleway:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div id="editor-app">
+
+        <div id="floating-media-controls" style="display: none; position: absolute; z-index: 100;">
+            <button id="canvas-play-pause-btn" class="btn floating-btn floating-action-btn">
+                <i class="fas fa-play"></i>
+            </button>
+            <button id="canvas-delete-btn" class="btn floating-btn floating-delete-btn">
+                <i class="fas fa-trash"></i>
+            </button>
+        </div>
+        <header class="editor-header">
+            <div class="logo-area">
+                <i class="fas fa-cloud"></i>
+                <span>Twin Clouds Editor</span>
+            </div>
+            <div class="canvas-size-select">
+                <label for="preset-size">Format:</label>
+                <select id="preset-size" class="styled-select">
+                    <option value="reel" data-w="300" data-h="550">Instagram Reel (300x550)</option>
+                    <option value="post" data-w="400" data-h="400">Square Post (400x400)</option>
+                    <option value="landscape" data-w="640" data-h="360">Landscape Post (640x360)</option>
+                    <option value="story" data-w="300" data-h="480">Story (300x480)</option>
+                </select>
+            </div>
+            <div class="action-area">
+                <button class="btn btn-export">Export</button>
+                <button class="btn btn-post">Post</button>
+            </div>
+        </header>
+
+        <div class="editor-layout">
+
+            <aside class="editor-sidebar left-sidebar">
+                <div class="sidebar-tabs">
+                    <button class="tab-button active" data-target="templates"><i class="fas fa-magic"></i></button>
+                    <button class="tab-button" data-target="media"><i class="fas fa-images"></i></button>
+                    <button class="tab-button" data-target="text"><i class="fas fa-font"></i></button>
+                </div>
+
+
+                <div class="tab-content" id="media">
+                    <h3>Your Media</h3>
+                    <p>Drag and drop your files here, or:</p>
+                    <input type="file" id="media-upload" accept="image/*" style="display: none;">
+                    <button class="btn btn-upload" id="upload-btn"><i class="fas fa-upload"></i> Upload Image</button>
+                </div>
+
+                <div class="tab-content" id="text">
+                    <h3>Text Styles</h3>
+                    <p>Click below to add text:</p>
+                    <div class="asset-grid">
+                        <div class="asset-card" data-text-type="heading">Add Heading</div>
+                        <div class="asset-card" data-text-type="body">Add Body Text</div>
+                    </div>
+                </div>
+
+                <div id="templates-container"></div>
+            </aside>
+
+            <main class="editor-canvas-zone">
+                <div class="canvas-controls">
+                    <button id="undo-btn"><i class="fas fa-undo"></i> Undo</button>
+                    <button id="redo-btn"><i class="fas fa-redo"></i> Redo</button>
+                    <span id="timeline-display">0:00 / 0:15</span>
+                    <button id="zoom-in"><i class="fas fa-search-plus"></i></button>
+                    <button id="zoom-out"><i class="fas fa-search-minus"></i></button>
+                </div>
+
+                <div class="canvas-viewport">
+                    <div class="device-mockup">
+                        <div id="editor-canvas-container" style="width:100%; height:100%;"></div>
+                    </div>
+                </div>
+
+                <div class="floating-toolbar" id="floating-toolbar">
+                    <button id="float-size"><i class="fas fa-text-height"></i> Size</button>
+                    <button id="float-bold"><i class="fas fa-bold"></i> Bold</button>
+                    <button id="float-italic"><i class="fas fa-italic"></i> Italic</button>
+                    <button id="float-duplicate"><i class="fas fa-clone"></i> Duplicate</button>
+                    <button id="float-to-front"><i class="fas fa-angle-double-up"></i> Front</button>
+                    <button id="float-to-back"><i class="fas fa-angle-double-down"></i> Back</button>
+                    <button id="float-delete"><i class="fas fa-trash-alt"></i> Delete</button>
+                </div>
+            </main>
+
+            <aside class="editor-sidebar right-sidebar">
+                <div class="sidebar-tabs-right">
+                    <button class="right-tab-button active" data-right-target="style-props"><i class="fas fa-palette"></i> Style</button>
+                    <button class="right-tab-button" data-right-target="text-props" style="display: none;"><i class="fas fa-paragraph"></i> Text</button>
+                    <button class="right-tab-button" data-right-target="anim-props"><i class="fas fa-bolt"></i> Animation</button>
+                </div>
+
+                <div class="right-tab-content active" id="style-props">
+
+                    <div class="property-group">
+                        <label>Opacity</label>
+                        <div class="slider-with-value">
+                            <input type="range" id="opacity-slider" min="0" max="100" value="100" class="styled-range">
+                            <span id="opacity-value">100%</span>
+                        </div>
+                    </div>
+
+                    <div class="property-group-toggle">
+                        <label for="shadow-toggle">Shadow</label>
+                        <label class="switch">
+                            <input type="checkbox" id="shadow-toggle">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                    <div class="property-group" id="shadow-controls" style="display: none;">
+                        <label>Shadow Color</label>
+                        <input type="color" id="shadow-color" value="#000000">
+                        <label>Shadow Blur</label>
+                        <input type="range" id="shadow-blur" min="0" max="50" value="10">
+                        <label>Shadow Offset X</label>
+                        <input type="range" id="shadow-offset-x" min="-25" max="25" value="5">
+                        <label>Shadow Offset Y</label>
+                        <input type="range" id="shadow-offset-y" min="-25" max="25" value="5">
+                    </div>
+
+                    <div id="emoji-props">
+                        <h3>Add an Element</h3>
+                        <p>Click to add an emoji or shape to the canvas.</p>
+                        <div class="emoji-grid">
+                            <button class="emoji-btn" data-emoji="😀">😀</button>
+                            <button class="emoji-btn" data-emoji="❤️">❤️</button>
+                            <button class="emoji-btn" data-emoji="⭐">⭐</button>
+                            <button class="emoji-btn" data-emoji="🔥">🔥</button>
+                            <button class="emoji-btn" data-emoji="💡">💡</button>
+                            <button class="emoji-btn" data-emoji="🚀">🚀</button>
+                            <button class="emoji-btn" data-emoji="👑">👑</button>
+                            <button class="emoji-btn" data-emoji="✅">✅</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="right-tab-content" id="text-props">
+    <div class="property-group">
+        <label>Font Family</label>
+        <select id="font-family-select" class="styled-select">
+            <option value="Bebas Neue">Bebas Neue</option>
+            <option value="Anton">Anton</option>
+            <option value="Oswald">Oswald</option>
+            <option value="Raleway">Raleway</option>
+            <option value="Arial">Arial</option>
+            <option value="Courier New">Courier New</option>
+            <option value="Georgia">Georgia</option>
+            <option value="Times New Roman">Times New Roman</option>
+            <option value="Verdana">Verdana</option>
+        </select>
+    </div>
+    <div class="property-group">
+        <label>Font Color</label>
+        <div class="color-input-group">
+            <input type="color" id="color-picker" class="styled-color-picker" value="#ffffff">
+            <input type="text" id="color-hex-input" class="styled-input" value="#FFFFFF" maxlength="7">
+        </div>
+    </div>
+    <div class="property-group button-group">
+        <button id="align-left" class="btn-align"><i class="fas fa-align-left"></i></button>
+        <button id="align-center" class="btn-align"><i class="fas fa-align-center"></i></button>
+        <button id="align-right" class="btn-align"><i class="fas fa-align-right"></i></button>
+    </div>
+    <div class="property-group">
+        <label>Line Height</label>
+        <div class="slider-with-value">
+            <input type="range" id="line-height-slider" min="0.5" max="3" step="0.1" value="1.2" class="styled-range">
+            <span id="line-height-value">1.2</span>
+        </div>
+    </div>
+    <div class="property-group">
+        <label>Letter Spacing</label>
+        <div class="slider-with-value">
+            <input type="range" id="letter-spacing-slider" min="-10" max="20" value="0" class="styled-range">
+            <span id="letter-spacing-value">0</span>
+        </div>
+    </div>
+    <div class="property-group">
+        <label>Stroke Color</label>
+        <div class="color-input-group">
+            <input type="color" id="stroke-color-picker" class="styled-color-picker" value="#000000">
+            <input type="text" id="stroke-color-hex" class="styled-input" value="#000000" maxlength="7">
+        </div>
+    </div>
+    <div class="property-group">
+        <label>Stroke Width</label>
+        <div class="slider-with-value">
+            <input type="range" id="stroke-width-slider" min="0" max="20" value="0" class="styled-range">
+            <span id="stroke-width-value">0</span>
+        </div>
+    </div>
+                </div>
+
+                <div class="right-tab-content" id="anim-props">
+                    <h3>Animation</h3>
+                    <p>Applies to the selected element.</p>
+                    <div class="property-group">
+                        <label>In Animation</label>
+                        <select id="animation-select" class="styled-select">
+                            <option value="none">None</option>
+                            <option value="fade_jiggle">Fade In & Jiggle (Demo)</option>
+                            <option value="slide_in_left">Slide In from Left</option>
+                            <option value="zoom_in">Zoom In</option>
+                        </select>
+                    </div>
+                </div>
+
+            </aside>
+
+        </div>
+    </div>
+
+   <script src="editor.js"></script>
+    <script type="module" src="templates-sidebar.js"></script>
+</body>
+</html>
